@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DONACIONES JXD</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--red:#c62828;--dark:#111;--muted:#6b6b6b;--card:#fff;--accent:#0b8f4a}
+*{box-sizing:border-box}
+html,body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;background:linear-gradient(180deg,var(--red),#b71c1c);color:var(--dark);height:100%}
+.wrap{max-width:920px;margin:16px auto;padding:12px}
+.card{background:var(--card);border-radius:18px;padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;box-shadow:0 14px 40px rgba(0,0,0,0.18)}
+header{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.logo{width:48px;height:48px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.logo img{width:100%;height:100%;object-fit:cover}
+h1{margin:0;font-size:1.4rem}
+p.lead{margin:4px 0 0;color:var(--muted);font-size:0.9rem}
+.qr-panel{padding:12px;border-radius:12px;background:linear-gradient(180deg,#ffffff,#fff7f7);display:flex;flex-direction:column;align-items:center;gap:10px;min-height:360px;overflow-wrap:break-word;transition:all .3s ease}
+.qrcanvas{width:220px;height:220px;position:relative;display:flex;align-items:center;justify-content:center;transition:all .3s ease}
+.qrcanvas img.logo-center{position:absolute;width:60px;height:60px;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:10}
+.address{font-family:monospace;background:#f6f6f6;padding:6px;border-radius:10px;width:100%;text-align:center;word-break:break-word;font-size:0.85rem;transition:all .2s ease}
+.note{font-size:12px;color:var(--muted)}
+.btn{padding:8px 12px;border-radius:10px;border:0;cursor:pointer;font-weight:700;font-size:0.9rem;transition:all .2s ease}
+.btn-primary{background:linear-gradient(180deg,#222,#111);color:#fff}
+.btn-ghost{background:transparent;border:1px solid #eee;color:var(--dark)}
+.success{display:none;align-items:center;gap:10px;flex-direction:column;transition:all .3s ease}
+.checkwrap{width:120px;height:120px;border-radius:999px;background:linear-gradient(180deg,#e8fff1,#d2ffea);display:flex;align-items:center;justify-content:center}
+.info{padding:6px}
+label{display:block;font-size:0.85rem;color:#222;margin-bottom:4px}
+select,input{width:100%;padding:10px;border-radius:10px;border:1px solid #eee;font-size:0.9rem;transition:all .2s ease}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.small{font-size:0.8rem;color:var(--muted)}
+.watermark{position:fixed;right:10px;bottom:10px;font-size:11px;color:#fff;opacity:0.14}
+.finalnote{margin-top:12px;text-align:center;font-weight:600;color:#333;font-size:0.9rem}
+@media (max-width:880px){.card{grid-template-columns:1fr;gap:12px}.qr-panel{min-height:300px}.qrcanvas{width:200px;height:200px}}
+.tick{width:70px;height:70px}
+.tick path{stroke:var(--accent);stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.circle{stroke:#0b8f4a;stroke-width:3.2;fill:none;stroke-dasharray:440;stroke-dashoffset:440;animation:drawCircle .6s ease forwards}
+.checkmark{stroke-dasharray:100;stroke-dashoffset:100;animation:drawMark .45s .3s ease forwards}
+@keyframes drawCircle{to{stroke-dashoffset:0}}
+@keyframes drawMark{to{stroke-dashoffset:0}}
+.fadeIn{animation:fadeIn .35s ease both}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="logo">
+    <img src="https://yt3.ggpht.com/UgFvjGAsTYR7hXSbbnU7gxBOOwoCN6fNRSs5iPTYtGg9E3qCCj6MVT1P_L_-fSsilezG_OIy=s600-c-k-c0x00ffffff-no-rj-rp-mo" alt="Logo">
+  </div>
+  <div>
+    <h1>DONACIONES JXD</h1>
+    <p class="lead">Recibe criptomonedas — comparte el QR y confirma cuando envíen el pago.</p>
+  </div>
+</header>
+
+<div class="card">
+<div class="qr-panel">
+  <div id="view-qr" class="fadeIn" style="width:100%;display:flex;flex-direction:column;align-items:center;display:none;opacity:0;">
+    <div class="qrcanvas" id="qrcanvas"></div>
+    <div class="note">Si no puedes escanear el QR copia las letras de abajo</div>
+    <div id="address" class="address">-</div>
+    <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
+      <button id="btnPagoEnviado" class="btn btn-primary">Pago enviado</button>
+      <button id="btnReset" class="btn btn-ghost">Limpiar</button>
+    </div>
+    <div class="finalnote" id="finalnote">Cada donación es recibida ❤️</div>
+  </div>
+
+  <div id="view-success" class="success">
+    <div class="checkwrap">
+      <svg class="tick" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+        <circle class="circle" cx="24" cy="24" r="18" stroke-linecap="round" />
+        <path class="checkmark" d="M14 25 L20 31 L34 17" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </div>
+    <div style="font-weight:800;font-size:1.2rem">PAGO EXITOSO</div>
+    <div class="small">Gracias — la donación fue marcada como enviada</div>
+  </div>
+</div>
+
+<div class="info">
+  <div>
+    <label>Moneda</label>
+    <select id="currency">
+      <option value="BTC">BTC</option>
+      <option value="ETH">ETH</option>
+      <option value="BNB">BNB</option>
+      <option value="LTC">Litecoin</option>
+      <option value="USDT_ETH">USDT - ERC20 (ETH)</option>
+      <option value="USDT_BSC">USDT - BSC (BEP20)</option>
+      <option value="USDT_TRON">USDT - TRON (TRC20)</option>
+      <option value="USDT_MATIC">USDT - Polygon</option>
+      <option value="USDT_SOL">USDT - Solana</option>
+    </select>
+  </div>
+  <div style="margin-top:10px">
+    <label>Monto en Cripto</label>
+    <input id="cryptoAmount" placeholder="ej. 0.000234" inputmode="decimal" />
+    <div class="small">Equivalente en USD</div>
+    <input id="usdAmount" placeholder="$25.50" inputmode="decimal" />
+  </div>
+  <div class="row" style="margin-top:10px;align-items:flex-end">
+    <div style="width:130px">
+      <div class="small">Acción</div>
+      <div style="margin-top:6px"><button id="btnGen" class="btn btn-primary">Crear Donación</button></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="watermark">Jefferson XD</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs2@0.0.2/qrcode.min.js"></script>
+<script>
+const addresses = {
+  BTC:'bc1qk7fl896wsv4clyj5nlxfqnqpkjmeyzfly5lqsq',
+  ETH:'0x2327c9aF14B2a00897bCf5DEf5eA3b1b401Fd3C6',
+  BNB:'0x2327c9aF14B2a00897bCf5DEf5eA3b1b401Fd3C6',
+  LTC:'Lfxks5vUmDvobV9hyVDCBcz12TDyyscA5g',
+  USDT_ETH:'0x2327c9aF14B2a00897bCf5DEf5eA3b1b401Fd3C6',
+  USDT_BSC:'0x2327c9aF14B2a00897bCf5DEf5eA3b1b401Fd3C6',
+  USDT_TRON:'TCEd5H7GWXn5zxqwpX92iPe6NUq6J1M7uv',
+  USDT_MATIC:'0x2327c9aF14B2a00897bCf5DEf5eA3b1b401Fd3C6',
+  USDT_SOL:'DHFhpqNdGhGgjm2B3qaLpgKeAwttWPjqyrsDRDceZzza'
+};
+const coinIds = {BTC:'bitcoin', ETH:'ethereum', BNB:'binancecoin', LTC:'litecoin'};
+const cryptoInput=document.getElementById('cryptoAmount');
+const usdInput=document.getElementById('usdAmount');
+const btnGen=document.getElementById('btnGen');
+const qrcanvas=document.getElementById('qrcanvas');
+const addressEl=document.getElementById('address');
+const btnPago=document.getElementById('btnPagoEnviado');
+const btnReset=document.getElementById('btnReset');
+const viewQR=document.getElementById('view-qr');
+const viewSuccess=document.getElementById('view-success');
+const currencyEl=document.getElementById('currency');
+let qr=null, timeoutReturn=null, debounceTimer=null;
+
+// Carga logos una sola vez
+const logoUrls = {BTC:'https://cryptologos.cc/logos/bitcoin-btc-logo.png',ETH:'https://cryptologos.cc/logos/ethereum-eth-logo.png',BNB:'https://cryptologos.cc/logos/bnb-bnb-logo.png',LTC:'https://cryptologos.cc/logos/litecoin-ltc-logo.png',USDT_ETH:'https://cryptologos.cc/logos/tether-usdt-logo.png',USDT_BSC:'https://cryptologos.cc/logos/tether-usdt-logo.png',USDT_TRON:'https://cryptologos.cc/logos/tether-usdt-logo.png',USDT_MATIC:'https://cryptologos.cc/logos/tether-usdt-logo.png',USDT_SOL:'https://cryptologos.cc/logos/tether-usdt-logo.png'};
+const logos={}; for(const key in logoUrls){ logos[key]=new Image(); logos[key].src=logoUrls[key]; }
+
+async function fetchPrice(coin){try{const r=await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coin}&vs_currencies=usd`);const j=await r.json();return j[coin].usd;}catch(e){console.error('Error precio',coin,e);return null;}}
+
+// Debounce para inputs
+function debounce(func, delay){return (...args)=>{clearTimeout(debounceTimer);debounceTimer=setTimeout(()=>func(...args),delay);};}
+
+async function updateUSD(){const coin=currencyEl.value;if(coin.startsWith('USDT')){usdInput.value=cryptoInput.value||'';return;}const val=parseFloat(cryptoInput.value);if(isNaN(val)||val<=0){usdInput.value='';return;}const price=await fetchPrice(coinIds[coin]);if(price) usdInput.value=(val*price).toFixed(2);}
+async function updateCrypto(){const coin=currencyEl.value;if(coin.startsWith('USDT')){cryptoInput.value=usdInput.value||'';return;}const val=parseFloat(usdInput.value);if(isNaN(val)||val<=0){cryptoInput.value='';return;}const price=await fetchPrice(coinIds[coin]);if(price) cryptoInput.value=(val/price).toFixed(6);}
+
+cryptoInput.addEventListener('input',debounce(updateUSD,300));
+usdInput.addEventListener('input',debounce(updateCrypto,300));
+currencyEl.addEventListener('change',()=>{cryptoInput.value='';usdInput.value='';fadeOutQR();});
+
+// Optimización QR
+function fadeOutQR(){ if(qrcanvas.innerHTML!==''){viewQR.style.opacity=0; setTimeout(clearQR,250); } }
+function clearQR(){ qrcanvas.innerHTML=''; addressEl.textContent='-'; viewQR.style.display='none'; }
+function generateQR(){ const coin=currencyEl.value; const val=parseFloat(cryptoInput.value); if(isNaN(val)||val<=0){alert('Ingrese un monto válido');return;} fadeOutQR(); setTimeout(()=>{let qrText=addresses[coin]; if(coin==='BTC') qrText=`bitcoin:${addresses[coin]}?amount=${val}`; qr=new QRCode(qrcanvas,{text:qrText,width:220,height:220,correctLevel:QRCode.CorrectLevel.H}); const img=logos[coin].cloneNode(); img.classList.add('logo-center'); img.onload=()=>{qrcanvas.appendChild(img);}; if(img.complete) qrcanvas.appendChild(img); addressEl.textContent=addresses[coin]; viewQR.style.display='flex'; setTimeout(()=>{viewQR.style.opacity=1;},10); },260);}
+btnGen.addEventListener('click',generateQR);
+
+function playDing(){try{const ctx=new(window.AudioContext||window.webkitAudioContext)();const o=ctx.createOscillator();const g=ctx.createGain();o.type='sine';o.frequency.value=880;g.gain.setValueAtTime(0,ctx.currentTime);g.gain.linearRampToValueAtTime(0.12,ctx.currentTime+0.02);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.6);o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+0.62);}catch(e){}}
+function showSuccess(){viewQR.style.display='none';viewSuccess.style.display='flex';playDing();if(timeoutReturn) clearTimeout(timeoutReturn);timeoutReturn=setTimeout(()=>{viewSuccess.style.display='none';viewQR.style.display='flex';},5000);}
+btnPago.addEventListener('click',()=>{showSuccess();});
+btnReset.addEventListener('click',()=>{cryptoInput.value='';usdInput.value='';clearQR();});
+window.addEventListener('load',()=>{clearQR();});
+</script>
+</body>
+</html>
